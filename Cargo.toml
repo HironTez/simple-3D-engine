@@ -1,0 +1,8 @@
+[package]
+name = "simple-3d-engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+winit="0.30.5"
+softbuffer="0.4.6"
