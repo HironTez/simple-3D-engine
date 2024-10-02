@@ -14,6 +14,12 @@ fn main() {
             }
         },
         &|request_redraw| {
+            // Queue a RedrawRequested event.
+            //
+            // You only need to call this if you've determined that you need to redraw in
+            // applications which do not always need to. Applications that redraw continuously
+            // can render here instead.
+
             // request_redraw();
         },
     );

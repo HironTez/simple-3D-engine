@@ -10,7 +10,7 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::WindowId;
 
 #[derive(Default)]
-struct App<'buffer_drawer, 'reinit_draw> {
+struct App<'buffer_drawer, 'on_draw_end> {
     window: Option<Rc<winit::window::Window>>,
     surface: Option<Surface<Rc<winit::window::Window>, Rc<winit::window::Window>>>,
     draw_buffer: Option<
@@ -20,10 +20,10 @@ struct App<'buffer_drawer, 'reinit_draw> {
             u32,
         ),
     >,
-    reinit_draw: Option<&'reinit_draw dyn Fn(&dyn Fn())>,
+    on_draw_end: Option<&'on_draw_end dyn Fn(&dyn Fn())>,
 }
 
-impl<'buffer_drawer, 'reinit_draw> ApplicationHandler for App<'buffer_drawer, 'reinit_draw> {
+impl<'buffer_drawer, 'on_draw_end> ApplicationHandler for App<'buffer_drawer, 'on_draw_end> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let window = {
             let window = event_loop
@@ -52,7 +52,6 @@ impl<'buffer_drawer, 'reinit_draw> ApplicationHandler for App<'buffer_drawer, 'r
                 // this event rather than in AboutToWait, since rendering in here allows
                 // the program to gracefully handle redraws requested by the OS.
 
-                // Draw.
                 let window = self
                     .window
                     .as_ref()
@@ -62,6 +61,7 @@ impl<'buffer_drawer, 'reinit_draw> ApplicationHandler for App<'buffer_drawer, 'r
                     .as_mut()
                     .expect("Couldn't get surface (not initialized)");
 
+                // Get the window size
                 let size = window.inner_size();
                 let width = size.width;
                 println!("width: {:#?}", width);
@@ -72,10 +72,12 @@ impl<'buffer_drawer, 'reinit_draw> ApplicationHandler for App<'buffer_drawer, 'r
                 let non_zero_height: std::num::NonZero<u32> = NonZeroU32::new(height)
                     .expect("winit::window::Window height should not be zero");
 
+                // Resize the surface
                 surface
                     .resize(non_zero_width, non_zero_height)
                     .expect("Couldn't resize surface");
 
+                // Allocate a buffer for rendering
                 let mut buffer = surface.buffer_mut().expect("Couldn't allocate buffer");
 
                 // Call the draw function
@@ -85,16 +87,12 @@ impl<'buffer_drawer, 'reinit_draw> ApplicationHandler for App<'buffer_drawer, 'r
                     height,
                 );
 
+                // Present the image from the buffer
                 buffer.present().expect("Couldn't present buffer");
 
-                // Queue a RedrawRequested event.
-                //
-                // You only need to call this if you've determined that you need to redraw in
-                // applications which do not always need to. Applications that redraw continuously
-                // can render here instead.
-
-                self.reinit_draw
-                    .expect("Couldn't access the reinit_draw function")(&|| {
+                // Suggest a redraw
+                self.on_draw_end
+                    .expect("Couldn't access the on_draw_end function")(&|| {
                     window.request_redraw()
                 });
             }
@@ -103,14 +101,14 @@ impl<'buffer_drawer, 'reinit_draw> ApplicationHandler for App<'buffer_drawer, 'r
     }
 }
 
-pub struct Window<'buffer_drawer, 'reinit_draw> {
-    app: App<'buffer_drawer, 'reinit_draw>,
+pub struct Window<'buffer_drawer, 'on_draw_end> {
+    app: App<'buffer_drawer, 'on_draw_end>,
 }
 
-impl<'buffer_drawer, 'reinit_draw> Window<'buffer_drawer, 'reinit_draw> {
+impl<'buffer_drawer, 'on_draw_end> Window<'buffer_drawer, 'on_draw_end> {
     pub fn new<DrawBuffer, InitRedraw>(
         draw_buffer: &'buffer_drawer DrawBuffer,
-        reinit_draw: &'reinit_draw InitRedraw,
+        on_draw_end: &'on_draw_end InitRedraw,
     ) -> Self
     where
         DrawBuffer: Fn(&mut Buffer<Rc<winit::window::Window>, Rc<winit::window::Window>>, u32, u32),
@@ -118,7 +116,7 @@ impl<'buffer_drawer, 'reinit_draw> Window<'buffer_drawer, 'reinit_draw> {
     {
         let mut app = App {
             draw_buffer: Some(draw_buffer),
-            reinit_draw: Some(reinit_draw),
+            on_draw_end: Some(on_draw_end),
             ..Default::default()
         };
 
