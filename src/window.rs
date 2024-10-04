@@ -3,7 +3,7 @@
 use std::num::NonZeroU32;
 use std::rc::Rc;
 
-use softbuffer::{Buffer, Context, Surface};
+use softbuffer::{Context, Surface};
 use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
@@ -13,13 +13,7 @@ use winit::window::WindowId;
 struct App<'buffer_drawer, 'on_draw_end> {
     window: Option<Rc<winit::window::Window>>,
     surface: Option<Surface<Rc<winit::window::Window>, Rc<winit::window::Window>>>,
-    draw_buffer: Option<
-        &'buffer_drawer dyn Fn(
-            &mut Buffer<Rc<winit::window::Window>, Rc<winit::window::Window>>,
-            u32,
-            u32,
-        ),
-    >,
+    draw_buffer: Option<&'buffer_drawer dyn Fn(&mut [u32], u32, u32)>,
     on_draw_end: Option<&'on_draw_end dyn Fn(&dyn Fn())>,
 }
 
@@ -111,7 +105,7 @@ impl<'buffer_drawer, 'on_draw_end> Window<'buffer_drawer, 'on_draw_end> {
         on_draw_end: &'on_draw_end InitRedraw,
     ) -> Self
     where
-        DrawBuffer: Fn(&mut Buffer<Rc<winit::window::Window>, Rc<winit::window::Window>>, u32, u32),
+        DrawBuffer: Fn(&mut [u32], u32, u32),
         InitRedraw: Fn(&dyn Fn()),
     {
         let mut app = App {
