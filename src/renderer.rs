@@ -12,7 +12,7 @@ impl Renderer {
             .expect("Couldn't find the specified camera!");
 
         for mesh in scene.meshes.as_slice() {
-            let vertices_count = mesh.vertices.len() as f32 / 3.0;
+            let vertices_count = mesh.vertices.len() as f64 / 3.0;
             // for (let i = 0; i <)
         }
 
@@ -29,9 +29,9 @@ impl Renderer {
 }
 
 fn multiply_matrices(
-    matrix_1: &Option<[f32; 16]>,
-    matrix_2: &Option<[f32; 16]>,
-) -> Option<[f32; 16]> {
+    matrix_1: &Option<[f64; 16]>,
+    matrix_2: &Option<[f64; 16]>,
+) -> Option<[f64; 16]> {
     if let (Some(matrix_1), Some(matrix_2)) = (matrix_1, matrix_2) {
         let mut result = [0.0; 16];
         for i in 0..4 {
@@ -53,7 +53,7 @@ fn multiply_matrices(
     None
 }
 
-fn create_translation_matrix(x: f32, y: f32, z: f32) -> Option<[f32; 16]> {
+fn create_translation_matrix(x: f64, y: f64, z: f64) -> Option<[f64; 16]> {
     if x == 0.0 && y == 0.0 && z == 0.0 {
         return None;
     }
@@ -67,13 +67,13 @@ fn create_translation_matrix(x: f32, y: f32, z: f32) -> Option<[f32; 16]> {
     ])
 }
 
-fn create_x_rotation_matrix(x_rotation: f32) -> Option<[f32; 16]> {
+fn create_x_rotation_matrix(x_rotation: f64) -> Option<[f64; 16]> {
     if x_rotation == 0.0 {
         return None;
     }
 
-    let sin = x_rotation.sin();
-    let cos = x_rotation.cos();
+    let sin = x_rotation.to_radians().sin();
+    let cos = x_rotation.to_radians().cos();
 
     // Rotation matrix
     Some([
@@ -83,13 +83,13 @@ fn create_x_rotation_matrix(x_rotation: f32) -> Option<[f32; 16]> {
         0.0, 0.0, 0.0, 1.0, //  w
     ])
 }
-fn create_y_rotation_matrix(y_rotation: f32) -> Option<[f32; 16]> {
+fn create_y_rotation_matrix(y_rotation: f64) -> Option<[f64; 16]> {
     if y_rotation == 0.0 {
         return None;
     }
 
-    let sin = y_rotation.sin();
-    let cos = y_rotation.cos();
+    let sin = y_rotation.to_radians().sin();
+    let cos = y_rotation.to_radians().cos();
 
     // Rotation matrix
     Some([
@@ -99,13 +99,13 @@ fn create_y_rotation_matrix(y_rotation: f32) -> Option<[f32; 16]> {
         0.0, 0.0, 0.0, 1.0, //  w
     ])
 }
-fn create_z_rotation_matrix(z_rotation: f32) -> Option<[f32; 16]> {
+fn create_z_rotation_matrix(z_rotation: f64) -> Option<[f64; 16]> {
     if z_rotation == 0.0 {
         return None;
     }
 
-    let sin = z_rotation.sin();
-    let cos = z_rotation.cos();
+    let sin = z_rotation.to_radians().sin();
+    let cos = z_rotation.to_radians().cos();
 
     // Rotation matrix
     Some([
@@ -115,7 +115,7 @@ fn create_z_rotation_matrix(z_rotation: f32) -> Option<[f32; 16]> {
         0.0, 0.0, 0.0, 1.0, //  w
     ])
 }
-fn create_scale_matrix(scale: f32) -> Option<[f32; 16]> {
+fn create_scale_matrix(scale: f64) -> Option<[f64; 16]> {
     if scale == 1.0 {
         return None;
     }
@@ -129,35 +129,35 @@ fn create_scale_matrix(scale: f32) -> Option<[f32; 16]> {
     ])
 }
 
-fn create_rotation_matrix(x_rotation: f32, y_rotation: f32, z_rotation: f32) -> Option<[f32; 16]> {
-    if x_rotation == 0.0 || y_rotation == 0.0 || z_rotation == 0.0 {
+fn create_rotation_matrix(x_rotation: f64, y_rotation: f64, z_rotation: f64) -> Option<[f64; 16]> {
+    if x_rotation == 0.0 && y_rotation == 0.0 && z_rotation == 0.0 {
         return None;
     }
 
     let x_rotation_matrix = create_x_rotation_matrix(x_rotation);
     let y_rotation_matrix = create_y_rotation_matrix(y_rotation);
-    let z_rotation_matrix = create_y_rotation_matrix(z_rotation);
+    let z_rotation_matrix = create_z_rotation_matrix(z_rotation);
 
-    let mut rotation_matrix: Option<[f32; 16]>;
+    let mut rotation_matrix: Option<[f64; 16]>;
     rotation_matrix = multiply_matrices(&x_rotation_matrix, &y_rotation_matrix);
     rotation_matrix = multiply_matrices(&rotation_matrix, &z_rotation_matrix);
     rotation_matrix
 }
 
 fn create_model_matrix(
-    x: f32,
-    y: f32,
-    z: f32,
-    x_rotation: f32,
-    y_rotation: f32,
-    z_rotation: f32,
-    scale: f32,
-) -> Option<[f32; 16]> {
+    x: f64,
+    y: f64,
+    z: f64,
+    x_rotation: f64,
+    y_rotation: f64,
+    z_rotation: f64,
+    scale: f64,
+) -> Option<[f64; 16]> {
     let translation_matrix = create_translation_matrix(x, y, z);
     let rotation_matrix = create_rotation_matrix(x_rotation, y_rotation, z_rotation);
     let scale_matrix = create_scale_matrix(scale);
 
-    let mut model_matrix: Option<[f32; 16]>;
+    let mut model_matrix: Option<[f64; 16]>;
     model_matrix = multiply_matrices(&translation_matrix, &rotation_matrix);
     model_matrix = multiply_matrices(&model_matrix, &scale_matrix);
     model_matrix

@@ -1,10 +1,10 @@
 #![forbid(unsafe_code)]
 
 pub struct Mesh {
-    pub position: Vec<f32>,
-    pub rotation: Vec<f32>,
-    pub scale: f32,
-    pub vertices: Vec<f32>,
+    pub position: Vec<f64>,
+    pub rotation: Vec<f64>,
+    pub scale: f64,
+    pub vertices: Vec<f64>,
     pub indices: Vec<usize>,
     // pub textures: Vec<String>,
     // pub shaders: Vec<String>,
@@ -14,10 +14,10 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new(
-        position: Vec<f32>,
-        rotation: Vec<f32>,
-        scale: f32,
-        vertices: Vec<f32>,
+        position: Vec<f64>,
+        rotation: Vec<f64>,
+        scale: f64,
+        vertices: Vec<f64>,
         indices: Vec<usize>,
     ) -> Self {
         Mesh {

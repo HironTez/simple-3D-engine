@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use std::num::NonZeroU32;
+use std::num::{NonZeroU32, NonZeroU64};
 use std::rc::Rc;
 
 use softbuffer::{Context, Surface};

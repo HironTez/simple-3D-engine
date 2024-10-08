@@ -1,22 +1,22 @@
 #![forbid(unsafe_code)]
 
 pub struct Camera {
-    pub position: Vec<f32>,
-    pub rotation: Vec<f32>,
-    pub fov: f32,
-    pub aspect_ratio: f32,
-    pub near_plane: f32,
-    pub far_plane: f32,
+    pub position: Vec<f64>,
+    pub rotation: Vec<f64>,
+    pub fov: f64,
+    pub aspect_ratio: f64,
+    pub near_plane: f64,
+    pub far_plane: f64,
 }
 
 impl Camera {
     pub fn new(
-        position: Vec<f32>,
-        rotation: Vec<f32>,
-        fov: f32,
-        aspect_ratio: f32,
-        near_plane: f32,
-        far_plane: f32,
+        position: Vec<f64>,
+        rotation: Vec<f64>,
+        fov: f64,
+        aspect_ratio: f64,
+        near_plane: f64,
+        far_plane: f64,
     ) -> Self {
         Camera {
             position,
