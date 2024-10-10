@@ -1,12 +1,14 @@
 #![forbid(unsafe_code)]
 
+use crate::tools::vector3::Vector3;
+
 pub struct Light {
-    pub position: Vec<f64>,
+    pub position: Vector3<f32>,
     pub brightness: u8,
 }
 
 impl Light {
-    pub fn new(position: Vec<f64>, brightness: u8) -> Self {
+    pub fn new(position: Vector3<f32>, brightness: u8) -> Self {
         Light {
             position,
             brightness,
