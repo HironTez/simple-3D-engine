@@ -1,10 +1,12 @@
 #![forbid(unsafe_code)]
 
+use crate::tools::vector3::Vector3;
+
 pub struct Mesh {
-    pub position: Vec<f64>,
-    pub rotation: Vec<f64>,
-    pub scale: f64,
-    pub vertices: Vec<f64>,
+    pub position: Vector3<f32>,
+    pub rotation: Vector3<f32>,
+    pub scale: f32,
+    pub vertices: Vec<Vector3<f32>>,
     pub indices: Vec<usize>,
     // pub textures: Vec<String>,
     // pub shaders: Vec<String>,
@@ -14,10 +16,10 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new(
-        position: Vec<f64>,
-        rotation: Vec<f64>,
-        scale: f64,
-        vertices: Vec<f64>,
+        position: Vector3<f32>,
+        rotation: Vector3<f32>,
+        scale: f32,
+        vertices: Vec<Vector3<f32>>,
         indices: Vec<usize>,
     ) -> Self {
         Mesh {

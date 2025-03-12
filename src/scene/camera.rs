@@ -1,22 +1,24 @@
 #![forbid(unsafe_code)]
 
+use crate::tools::vector3::Vector3;
+
 pub struct Camera {
-    pub position: Vec<f64>,
-    pub rotation: Vec<f64>,
-    pub fov: f64,
-    pub aspect_ratio: f64,
-    pub near_plane: f64,
-    pub far_plane: f64,
+    pub position: Vector3<f32>,
+    pub rotation: Vector3<f32>,
+    pub fov: f32,
+    pub aspect_ratio: Option<f32>,
+    pub near_plane: f32,
+    pub far_plane: f32,
 }
 
 impl Camera {
     pub fn new(
-        position: Vec<f64>,
-        rotation: Vec<f64>,
-        fov: f64,
-        aspect_ratio: f64,
-        near_plane: f64,
-        far_plane: f64,
+        position: Vector3<f32>,
+        rotation: Vector3<f32>,
+        fov: f32,
+        aspect_ratio: Option<f32>,
+        near_plane: f32,
+        far_plane: f32,
     ) -> Self {
         Camera {
             position,
