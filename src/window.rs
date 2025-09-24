@@ -1,20 +1,23 @@
 #![forbid(unsafe_code)]
 
-use std::num::NonZeroU32;
-use std::rc::Rc;
+use std::{collections::HashSet, num::NonZeroU32, rc::Rc};
 
 use softbuffer::{Context, Surface};
-use winit::application::ApplicationHandler;
-use winit::event::WindowEvent;
-use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
-use winit::window::WindowId;
+use winit::{
+    application::ApplicationHandler,
+    event::{ElementState, KeyEvent, WindowEvent},
+    event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
+    keyboard::{KeyCode, PhysicalKey},
+    window::WindowId,
+};
 
 #[derive(Default)]
 struct App<'buffer_drawer, 'on_draw_end> {
     window: Option<Rc<winit::window::Window>>,
     surface: Option<Surface<Rc<winit::window::Window>, Rc<winit::window::Window>>>,
     draw_buffer: Option<&'buffer_drawer dyn Fn(&mut [u32], u32, u32)>,
-    on_draw_end: Option<&'on_draw_end dyn Fn(&dyn Fn())>,
+    on_draw_end: Option<&'on_draw_end dyn Fn(&dyn Fn(), &HashSet<KeyCode>)>,
+    keys: HashSet<KeyCode>,
 }
 
 impl<'buffer_drawer, 'on_draw_end> ApplicationHandler for App<'buffer_drawer, 'on_draw_end> {
@@ -39,6 +42,20 @@ impl<'buffer_drawer, 'on_draw_end> ApplicationHandler for App<'buffer_drawer, 'o
                 println!("The close button was pressed; stopping");
                 event_loop.exit();
             }
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(key_code),
+                        state,
+                        ..
+                    },
+                ..
+            } => {
+                match state {
+                    ElementState::Pressed => self.keys.insert(key_code),
+                    ElementState::Released => self.keys.remove(&key_code),
+                };
+            }
             WindowEvent::RedrawRequested => {
                 // Redraw the application.
                 //
@@ -58,9 +75,7 @@ impl<'buffer_drawer, 'on_draw_end> ApplicationHandler for App<'buffer_drawer, 'o
                 // Get the window size
                 let size = window.inner_size();
                 let width = size.width;
-                println!("width: {:#?}", width);
                 let height = size.height;
-                println!("height: {:#?}", height);
                 let non_zero_width =
                     NonZeroU32::new(width).expect("winit::window::Window width should not be zero");
                 let non_zero_height: std::num::NonZero<u32> = NonZeroU32::new(height)
@@ -86,9 +101,10 @@ impl<'buffer_drawer, 'on_draw_end> ApplicationHandler for App<'buffer_drawer, 'o
 
                 // Suggest a redraw
                 self.on_draw_end
-                    .expect("Couldn't access the on_draw_end function")(&|| {
-                    window.request_redraw()
-                });
+                    .expect("Couldn't access the on_draw_end function")(
+                    &|| window.request_redraw(),
+                    &self.keys,
+                );
             }
             _ => (),
         }
@@ -106,7 +122,7 @@ impl<'buffer_drawer, 'on_draw_end> Window<'buffer_drawer, 'on_draw_end> {
     ) -> Self
     where
         DrawBuffer: Fn(&mut [u32], u32, u32),
-        InitRedraw: Fn(&dyn Fn()),
+        InitRedraw: Fn(&dyn Fn(), &HashSet<KeyCode>),
     {
         let mut app = App {
             draw_buffer: Some(draw_buffer),
